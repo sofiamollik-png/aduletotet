@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniTV Store - Premium Admin Control Panel</title>
+  
+  <!-- Tailwind CSS & DaisyUI -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Ubuntu', sans-serif;
+    }
+    h1, h2, h3, .heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Navigation Bar -->
+  <div class="navbar bg-slate-900 border-b border-slate-800 px-6 py-4">
+    <div class="flex-1 gap-3">
+      <div class="avatar placeholder">
+        <div class="bg-indigo-600 text-white rounded-xl w-12 h-12 flex items-center justify-center">
+          <i class="fa-solid fa-tv text-2xl"></i>
+        </div>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-wider text-slate-100">OMNITV STORE</h1>
+        <p class="text-xs text-cyan-400 font-semibold tracking-widest">PREMIUM CONTROL PANEL</p>
+      </div>
+    </div>
+    <div class="flex-none gap-4">
+      <div id="connectionStatus" class="badge badge-warning gap-2 p-3 font-semibold">
+        <span class="loading loading-ring loading-xs"></span>
+        Connecting...
+      </div>
+    </div>
+  </div>
+
+  <div class="container mx-auto p-6 max-w-7xl">
+    
+    <!-- Config Banner / Setup Alert -->
+    <div id="setupAlert" class="alert alert-info shadow-lg mb-8 border border-cyan-800 bg-slate-900 text-slate-100 flex flex-col md:flex-row md:items-center justify-between">
+      <div class="flex gap-3">
+        <i class="fa-solid fa-circle-info text-2xl text-cyan-400"></i>
+        <div>
+          <h3 class="font-bold text-lg">Google Sheets Web API Configuration</h3>
+          <p class="text-sm text-slate-400">Successfully linked with your live Google Apps Script web service.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Tabs -->
+    <div role="tablist" class="tabs tabs-boxed bg-slate-900 border border-slate-800 p-2 mb-8 max-w-md mx-auto">
+      <a role="tab" id="tabActivations" class="tab tab-active text-indigo-400 font-bold gap-2" onclick="switchTab('activations')">
+        <i class="fa-solid fa-key"></i> Activations
+      </a>
+      <a role="tab" id="tabFiles" class="tab font-bold gap-2 text-slate-400" onclick="switchTab('files')">
+        <i class="fa-solid fa-file-invoice"></i> App Files
+      </a>
+    </div>
+
+    <!-- ================== ACTIVATIONS MODULE ================== -->
+    <div id="activationsModule" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left: Form Card -->
+        <div class="card bg-slate-900 border border-slate-800 shadow-xl lg:col-span-1">
+          <div class="card-body">
+            <h2 class="card-title text-xl font-bold text-indigo-400 border-b border-slate-800 pb-3 mb-4">
+              <i class="fa-solid fa-user-plus"></i> Device Activation Details
+            </h2>
+            
+            <form id="activationForm" onsubmit="saveActivation(event)" class="space-y-4">
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">MAC Address</span></label>
+                <input type="text" id="actMac" placeholder="D3:3C:C3:1B:1D:84" class="input input-bordered w-full bg-slate-950 border-slate-800 text-white font-mono focus:border-indigo-500" required />
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">Device Name</span></label>
+                <input type="text" id="actDevice" placeholder="Chromecast Google TV" class="input input-bordered w-full bg-slate-950 border-slate-800 text-white" />
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">Android Version</span></label>
+                <input type="text" id="actVersion" placeholder="Android 12" class="input input-bordered w-full bg-slate-950 border-slate-800 text-white" />
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">Expiry Date / Duration</span></label>
+                <input type="text" id="actExpiry" placeholder="Permanent or Date (e.g. 2026-12-31)" class="input input-bordered w-full bg-slate-950 border-slate-800 text-white" value="Permanent" />
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">Activation Status</span></label>
+                <select id="actStatus" class="select select-bordered w-full bg-slate-950 border-slate-800 text-white font-semibold">
+                  <option value="Active" class="text-green-500">Active</option>
+                  <option value="Pending" class="text-yellow-500" selected>Pending</option>
+                  <option value="Rejected" class="text-red-500">Rejected</option>
+                </select>
+              </div>
+
+              <div class="card-actions justify-end mt-6">
+                <button type="button" class="btn btn-ghost btn-sm text-slate-400" onclick="clearActivationForm()">Clear</button>
+                <button type="submit" class="btn btn-indigo bg-indigo-600 hover:bg-indigo-700 text-white px-6">Save Device</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right: Table List Card -->
+        <div class="card bg-slate-900 border border-slate-800 shadow-xl lg:col-span-2">
+          <div class="card-body">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4 mb-4">
+              <div>
+                <h2 class="card-title text-xl font-bold text-indigo-400">
+                  <i class="fa-solid fa-list-check"></i> Registered MAC Activations
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Manage customer devices, verify Android version and status.</p>
+              </div>
+              <button class="btn btn-sm btn-outline btn-indigo border-indigo-500 text-indigo-400 hover:bg-indigo-600 hover:text-white" onclick="fetchActivations()">
+                <i class="fa-solid fa-rotate"></i> Refresh
+              </button>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto w-full">
+              <table class="table w-full text-slate-200">
+                <thead>
+                  <tr class="border-slate-800 text-slate-400">
+                    <th>MAC Address / Device</th>
+                    <th>Expiry</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="activationsTableBody">
+                  <tr>
+                    <td colspan="4" class="text-center py-8">
+                      <span class="loading loading-spinner loading-md text-indigo-500"></span>
+                      <p class="text-slate-500 mt-2">Loading activations from Google Sheets...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ================== FILES MODULE ================== -->
+    <div id="filesModule" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left: Form Card -->
+        <div class="card bg-slate-900 border border-slate-800 shadow-xl lg:col-span-1">
+          <div class="card-body">
+            <h2 class="card-title text-xl font-bold text-indigo-400 border-b border-slate-800 pb-3 mb-4">
+              <i class="fa-solid fa-file-arrow-up"></i> Add / Edit App File
+            </h2>
+            
+            <form id="fileForm" onsubmit="saveFile(event)" class="space-y-4">
+              <input type="hidden" id="fileId" />
+
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">App Name</span></label>
+                <input type="text" id="fileName" placeholder="OmniStream Lite" class="input input-bordered w-full bg-slate-950 border-slate-800 text-white" required />
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">Library Code</span></label>
+                <input type="text" id="fileLibraryCode" placeholder="OMNITV" list="libraryCodes" class="input input-bordered w-full bg-slate-950 border-slate-800 text-white font-mono" required />
+                <datalist id="libraryCodes">
+                  <option value="108435E6"></option>
+                  <option value="OMNITV"></option>
+                  <option value="OMNIADUL"></option>
+                  <option value="OMINIPHN"></option>
+                  <option value="OMNIDRAM"></option>
+                </datalist>
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">Direct App Link (APK URL)</span></label>
+                <input type="url" id="fileUrl" placeholder="https://example.com/app.apk" class="input input-bordered w-full bg-slate-950 border-slate-800 text-white font-mono" required />
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">App Logo Link</span></label>
+                <input type="url" id="fileLogo" placeholder="https://example.com/logo.png" class="input input-bordered w-full bg-slate-950 border-slate-800 text-white font-mono" />
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">App Size (in Bytes)</span></label>
+                <input type="number" id="fileSize" placeholder="15200000 (15 MB)" class="input input-bordered w-full bg-slate-950 border-slate-800 text-white" value="15000000" />
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">App Description</span></label>
+                <textarea id="fileDescription" placeholder="🚀 OmniStream Lite: ছোট ডিভাইসে বড় বিনোদন! অতি দ্রুত লাইভ ও ডিমান্ড কন্টেন্ট..." class="textarea textarea-bordered w-full bg-slate-950 border-slate-800 text-white h-24" required></textarea>
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text font-bold text-slate-300">App Tutorial URL</span></label>
+                <input type="url" id="fileTutorial" placeholder="https://youtube.com/watch?v=..." class="input input-bordered w-full bg-slate-950 border-slate-800 text-white" />
+              </div>
+
+              <div class="card-actions justify-end mt-6">
+                <button type="button" class="btn btn-ghost btn-sm text-slate-400" onclick="clearFileForm()">Clear</button>
+                <button type="submit" class="btn btn-indigo bg-indigo-600 hover:bg-indigo-700 text-white px-6">Save App</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right: Table List Card -->
+        <div class="card bg-slate-900 border border-slate-800 shadow-xl lg:col-span-2">
+          <div class="card-body">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4 mb-4">
+              <div>
+                <h2 class="card-title text-xl font-bold text-indigo-400">
+                  <i class="fa-solid fa-list-check"></i> Library App Files List
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Manage applications, files, and updates inside the OmniTV Store app.</p>
+              </div>
+              <button class="btn btn-sm btn-outline btn-indigo border-indigo-500 text-indigo-400 hover:bg-indigo-600 hover:text-white" onclick="fetchFiles()">
+                <i class="fa-solid fa-rotate"></i> Refresh
+              </button>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto w-full">
+              <table class="table w-full text-slate-200">
+                <thead>
+                  <tr class="border-slate-800 text-slate-400">
+                    <th>App File details</th>
+                    <th>File Size</th>
+                    <th class="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="filesTableBody">
+                  <tr>
+                    <td colspan="3" class="text-center py-8">
+                      <span class="loading loading-spinner loading-md text-indigo-500"></span>
+                      <p class="text-slate-500 mt-2">Loading store files from Google Sheets...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer Info -->
+  <footer class="footer footer-center p-6 bg-slate-900 text-slate-400 border-t border-slate-800 mt-12 text-sm">
+    <aside>
+      <p class="font-semibold">OmniTV Store Premium App Store Ecosystem © 2026</p>
+      <p class="text-xs text-slate-500">Fully decoupled static administrative client synced via Google Sheets Web App</p>
+    </aside>
+  </footer>
+
+  <!-- Script connector -->
+  <script src="script.js"></script>
+</body>
+</html>
